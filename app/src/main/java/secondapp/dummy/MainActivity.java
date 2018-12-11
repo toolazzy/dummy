@@ -2,9 +2,11 @@ package secondapp.dummy;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -21,15 +23,19 @@ import secondapp.dummy.data.WeatherResponse;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView textview1;
+
+    private RecyclerView rlist;
+    List<DailyForecast> childList=new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ApiKey api=new ApiKey();
-        textview1= (RecyclerView) findViewById(R.id.rlist);
-        final Call<WeatherResponse> jsonData = WeatherAPI.getRedditService().getWeather(api.getApikey());
-        jsonData.enqueue(new Callback<WeatherResponse>() {
+        rlist = (RecyclerView) findViewById(R.id.rlist);
+        rlist.setLayoutManager(new LinearLayoutManager(this));
+        final Call<WeatherResponse> jsondata = WeatherAPI.getRedditService().getWeather(api.getApikey());
+        jsondata.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 StringBuilder strBuilder=new StringBuilder("");
@@ -45,10 +51,14 @@ public class MainActivity extends AppCompatActivity {
                     maxTemp= Integer.valueOf(maximum.getValue());
                     String morning=day.getIconPhrase();
                     String night=df.getNight().getIconPhrase();
+                    childList=response.body().getDailyForecasts();
                     strBuilder.append(date+"\n"+minTemp+" "+maxTemp+" \n"+morning+"\n\n");
 
                 }
-                textview1.setAdapter(new dummyadapter(strBuilder));
+                String str;
+                str=strBuilder.toString();
+                rlist.setAdapter(new adapterclass(childList));
+               // textView1.setText(strBuilder) ;
 
             }
 
@@ -57,5 +67,5 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Failed to get response", Toast.LENGTH_SHORT).show();
             }
         });
-}
+    }
 }
